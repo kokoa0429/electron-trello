@@ -2,6 +2,13 @@ const electron = require('electron');
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 let mainWindow = null;
+
+const { remote } = require('electron')
+const Menu = electron.Menu;
+const MenuItem = electron.MenuItem;
+
+var checked = false;
+
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') {
     app.quit();
@@ -15,23 +22,32 @@ app.on('ready', function () {
   mainWindow.setPosition(-700, 130);
   mainWindow.on('closed', function () {
     mainWindow = null;
+    
   });
+
+  const xmenu = new Menu()
+  xmenu.append(new MenuItem({
+    type: "checkbox",
+    label: "隠さない",
+    click: function(e) {
+      checked = e.checked
+    }
+  }))
+  mainWindow.webContents.on('context-menu', function(e,params) {
+    xmenu.popup(mainWindow,params.x,params.y)
+  })
 
   var b = 0;
   setInterval(function () {
     // get the mouse position
     let mousePos = electron.screen.getCursorScreenPoint();
     console.log(mousePos);
-    if (mousePos.x < 5) {
+    if (mousePos.x < 5 && mousePos.y <= 850) {
       mainWindow.setPosition(0, 130);
-      b = 1;
     }
     else {
-      if (b == 1 && mousePos.x < 730) {
-
-      }
-      else {
-        mainWindow.setPosition(-700, 130);
+      if (!checked && mousePos.x >= 750) {
+        mainWindow.setPosition(-780, 130);
       }
     }
   }, 1000);
